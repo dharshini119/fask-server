@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 import time
 import google.generativeai as genai
 from flask_cors import CORS
-
+from functools import lru_cache
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
@@ -145,7 +145,8 @@ async def get_response_from_amazon(search_term):
 def get_alternative_titles():
     query = request.args.get('query', default=None, type=str)
 
-    async def main():
+    @lru_cache(maxsize=None)
+    async def main(query):
         start_time = time.time()
 
         response_data = get_input_and_send_to_gemini(query)
@@ -166,7 +167,7 @@ def get_alternative_titles():
         print(f"Final data to return: {json_data}")
         return json_data
 
-    return asyncio.run(main())
+    return asyncio.run(main(query))
 
 if __name__ == '__main__':
     app.run(debug=True)
